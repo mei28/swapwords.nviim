@@ -18,12 +18,21 @@ end
 
 function M.swap_words_in_selection(args)
   local start_row, end_row = args.line1, args.line2
+
+  if start_row > end_row or start_row < 1 then
+    return nil, "Invalid range. Ensure that the start line is before the end line and they exist."
+  end
+
   local lines = vim.fn.getline(start_row, end_row)
   local selection = table.concat(lines, "\n")
   local words1, words2 = args.fargs[1], args.fargs[2]
 
-  local swapped_text = swap_words_in_text(selection, words1, words2)
+  if not selection:find(words1) and not selection:find(words2) then
+    print("Neither of the words to swap were found in the selection.")
+    return
+  end
 
+  local swapped_text = swap_words_in_text(selection, words1, words2)
   local new_lines = vim.split(swapped_text, "\n")
   vim.fn.setline(start_row, new_lines)
 end
@@ -41,4 +50,3 @@ vim.api.nvim_create_user_command(
 )
 
 return M
-

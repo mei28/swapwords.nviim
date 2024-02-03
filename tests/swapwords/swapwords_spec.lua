@@ -54,3 +54,41 @@ describe('swap_words', function()
     eq(result, { "third fourth" })
   end)
 end)
+
+
+describe('swap_words error handling', function()
+  it('shows an error message if there is only one argument', function()
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { "first second" })
+    local ok, err = pcall(function()
+      your_plugin.swap_words_in_selection({ line1 = 1, line2 = 1, fargs = { "first" } })
+    end)
+    eq(false, ok)
+    -- assert that `err` contains the expected error message
+  end)
+
+  it('shows an error message if no words are given', function()
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { "first second" })
+    local ok, err = pcall(function()
+      your_plugin.swap_words_in_selection({ line1 = 1, line2 = 1, fargs = {} })
+    end)
+    eq(false, ok)
+    -- assert that `err` contains the expected error message
+  end)
+
+  it('does nothing if the words are not found in the selection', function()
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { "third fourth" })
+    your_plugin.swap_words_in_selection({ line1 = 1, line2 = 1, fargs = { "first", "second" } })
+    local result = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+    eq(result, { "third fourth" }) -- Expect the text to remain unchanged
+  end)
+
+  it('shows an error message if the line range is invalid', function()
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { "first second" })
+    local result, err = your_plugin.swap_words_in_selection({ line1 = 2, line2 = 1, fargs = { "first", "second" } })
+    eq(nil, result) -- 期待される結果は `nil` で、`false`に変換されます
+    -- エラーメッセージが期待通りかチェック
+    eq("Invalid range. Ensure that the start line is before the end line and they exist.", err)
+  end)
+
+  -- 他のテストケース...
+end)
